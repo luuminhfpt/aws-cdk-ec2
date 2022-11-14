@@ -11,6 +11,8 @@ class AwsCdkEc2PythonStack(Stack):
     security_group = None
     key_pair = None
     user_data = None
+    instance = None
+    volumes = None
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -24,60 +26,80 @@ class AwsCdkEc2PythonStack(Stack):
             generation = ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
             storage = ec2.AmazonLinuxStorage.GENERAL_PURPOSE
         )
-        self.getSecurityGroup()
+        self.getRootVolume()
         self.getKeyPair()
         self.getUserData()
 
-        ec2.Instance(
+        # Create an instance
+        self.instance = ec2.Instance(
             self, 
             self.instance_name,
             vpc = self.vpc,
             instance_type = instance_type,
             machine_image = machine_image,
             key_name = self.key_pair.key_name,
-            user_data = self.user_data
+            user_data = self.user_data,
+            block_devices = self.volumes
         )
+
+        # Set instance connection
+        self.setSecurityGroup()
+
+        # Associates an Elastic IP address with this instance
+        self.associatesEIP()
 
     def getVPC(self):
         self.vpc = ec2.Vpc.from_lookup(self, "MinhLuuDefaultVPC", is_default=True)
         # or create new VPC if you want
 
-    def getSecurityGroup(self):
-        # create Security Group for the Instance
-        security_group_name = self.instance_name + "-SG"
-
-        security_group = ec2.SecurityGroup(
-            self, 
-            security_group_name, 
-            vpc = self.vpc,
-            allow_all_outbound = True
-        )
-
-        security_group.add_ingress_rule(
+    def setSecurityGroup(self):
+        self.instance.connections.allow_from(
             ec2.Peer.any_ipv4(),
             ec2.Port.tcp(80),
+            # ec2.Peer.any_ipv4(),
+            # self.security_group
             'allow HTTP traffic from anywhere',
         )
 
-        security_group.add_ingress_rule(
+        self.instance.connections.allow_from(
+            # self.security_group.connections,
             ec2.Peer.any_ipv4(),
             ec2.Port.tcp(443),
             'allow HTTPS traffic from anywhere',
         )
 
-        security_group.add_ingress_rule(
+        self.instance.connections.allow_from(
+            # self.security_group.connections,
             ec2.Peer.ipv4("3.1.15.39/32"),
             ec2.Port.tcp(22),
             'allow SSH access from vpn bigin',
         )
 
-        security_group.add_ingress_rule(
+        self.instance.connections.allow_from(
+            # self.security_group.connections,
             ec2.Peer.ipv4("3.214.249.149/32"),
             ec2.Port.tcp(22),
             'allow SSH access from bigin gitlap runner',
         )
 
-        self.security_group =  security_group
+    def associatesEIP(self):
+        elastic_ip = ec2.CfnEIP(
+            self, 
+            self.instance_name + "-EIP",
+            instance_id = self.instance.instance_id
+        )
+        ec2.CfnEIPAssociation(
+            self, 
+            self.instance_name + "-EIPAssociation",
+            eip = elastic_ip.ref,
+            instance_id = self.instance.instance_id
+        )
+    
+    def getRootVolume(self):
+        self.volumes = [ec2.BlockDevice(
+            device_name = "/dev/xvda",
+            volume = ec2.BlockDeviceVolume.ebs(20)
+        )]
 
     def getKeyPair(self):
         key_name = self.instance_name + "-key"
