@@ -3,14 +3,20 @@
 
 This project provides a CDK construct to create an EC2 Instance, development with Python language.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+```
+- Using VPC default
+- Create new Key Pair
+- Create new Security Group
+- Create new EC2 Instance: Amazon Linux 2 - 20 GB
+- Create new Elastic IP and associates with this instance
+- Setup UserData:
+    + Install Docker
+    + Install Ansible
+```
 
-This project is set up like a standard Python project. The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+The initialization process also creates a virtualenv within this project, stored under the `.venv` directory. 
+To create the virtualenv it assumes that there is a `python3` executable in your path with access to the `venv`
+package. If for any reason the automatic creation of the virtualenv fails, you can create the virtualenv manually.
 
 To manually create a virtualenv on MacOS and Linux:
 
