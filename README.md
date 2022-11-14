@@ -1,11 +1,11 @@
 
-# Welcome to your CDK Python project!
+# Welcome to the CDK Construct Library for AWS::EC2
 
-This is a blank project for CDK development with Python.
+This project provides a CDK construct to create an EC2 Instance, development with Python language.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
-This project is set up like a standard Python project.  The initialization
+This project is set up like a standard Python project. The initialization
 process also creates a virtualenv within this project, stored under the `.venv`
 directory.  To create the virtualenv it assumes that there is a `python3`
 (or `python` for Windows) executable in your path with access to the `venv`
@@ -37,15 +37,30 @@ Once the virtualenv is activated, you can install the required dependencies.
 $ pip install -r requirements.txt
 ```
 
-At this point you can now synthesize the CloudFormation template for this code.
+Copy .env.example to .env to config your aws acount id and region
 
 ```
-$ cdk synth
+$ CDK_DEFAULT_ACCOUNT=xxx
+$ CDK_DEFAULT_REGION=xxx
 ```
 
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
+Use the cdk bootstrap command to bootstrap AWS environments
+
+```
+$ cdk bootstrap
+```
+
+To deploy this stack to your default AWS account/region
+
+```
+$ cdk deploy
+```
+
+Or you can using the script file in scripts folder to deploy to specific environments
+
+```
+$ ./cdk-deploy-to.sh 123457689 us-east-1 "$@"
+```
 
 ## Useful commands
 
@@ -54,5 +69,3 @@ command.
  * `cdk deploy`      deploy this stack to your default AWS account/region
  * `cdk diff`        compare deployed stack with current state
  * `cdk docs`        open CDK documentation
-
-Enjoy!
